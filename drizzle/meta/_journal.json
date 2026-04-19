@@ -15,6 +15,13 @@
       "when": 1776601365269,
       "tag": "0001_dizzy_bucky",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776617505207,
+      "tag": "0002_jittery_hulk",
+      "breakpoints": true
     }
   ]
 }

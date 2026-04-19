@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Application | OIDC Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at top right, #1e1b4b, transparent), 
+                              radial-gradient(circle at bottom left, #312e81, transparent);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .result {
+            display: none;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 1rem;
+        }
+
+        .result h2 {
+            font-size: 1.25rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .cred-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.875rem;
+            border: 1px solid var(--border);
+        }
+
+        .cred-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card" id="form-card">
+            <div class="header">
+                <h1>Create Application</h1>
+                <p>Register your product for OAuth access</p>
+            </div>
+
+            <form id="reg-form">
+                <div class="form-group">
+                    <label for="name">Application Display Name</label>
+                    <input type="text" id="name" placeholder="My Awesome App" required>
+                </div>
+                <div class="form-group">
+                    <label for="homepage">Application URL</label>
+                    <input type="url" id="homepage" placeholder="https://myapp.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="redirect">Redirect URI</label>
+                    <input type="url" id="redirect" placeholder="https://myapp.com/api/auth/callback" required>
+                </div>
+                
+                <button type="submit" class="btn">Generate Credentials</button>
+            </form>
+        </div>
+
+        <div class="card result" id="result-card">
+            <div class="header">
+                <h1 style="background: linear-gradient(to right, #10b981, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Success!</h1>
+                <p>Keep these credentials secure. We won't show the secret again.</p>
+            </div>
+
+            <div>
+                <div class="cred-label">Client ID</div>
+                <div class="cred-box" id="disp-client-id"></div>
+                
+                <div class="cred-label">Client Secret</div>
+                <div class="cred-box" id="disp-client-secret" style="color: #fb7185;"></div>
+
+                <div class="cred-label">Redirect URI</div>
+                <div class="cred-box" id="disp-redirect"></div>
+            </div>
+
+            <button class="btn" style="background: #334155;" onclick="location.reload()">Register Another</button>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 OIDC OAuth Management Console
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('reg-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            const payload = {
+                name: document.getElementById('name').value,
+                homepageUrl: document.getElementById('homepage').value,
+                redirectUris: document.getElementById('redirect').value,
+            };
+
+            try {
+                const res = await fetch('/clients/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.getElementById('form-card').style.display = 'none';
+                    document.getElementById('result-card').style.display = 'block';
+                    
+                    document.getElementById('disp-client-id').textContent = data.data.client_id;
+                    document.getElementById('disp-client-secret').textContent = data.data.client_secret;
+                    document.getElementById('disp-redirect').textContent = data.data.redirect_uris;
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Connection error. Please check if server is running.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Credentials';
+            }
+        });
+    </script>
+</body>
+</html>

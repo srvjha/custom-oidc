@@ -28,6 +28,22 @@ export const usersTable = pgTable("users", {
   updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
 });
 
+// ─── OAuth Clients ───────────────────────────────────────────
+
+export const clientsTable = pgTable("clients", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 50 }).notNull(),
+  clientId: varchar("client_id", { length: 32 }).notNull().unique(),
+  clientSecret: varchar("client_secret", { length: 64 }).notNull(),
+  homepageUrl: text("homepage_url"),
+  redirectUris: text("redirect_uris").notNull(), // Comma-separated list for simplicity in this demo
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
+});
+
 // ─── Refresh Tokens ───────────────────────────────────────────
 
 export const refreshTokensTable = pgTable("refresh_tokens", {

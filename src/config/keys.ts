@@ -70,8 +70,6 @@ export async function initializeKeys(): Promise<void> {
   console.log(`[keys] Key ID (kid): ${kid}`);
 }
 
-// ─── Accessors ────────────────────────────────────────────────
-
 export function getPrivateKey(): KeyObject {
   return privateKey;
 }

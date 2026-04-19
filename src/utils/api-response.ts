@@ -26,10 +26,6 @@ class ApiResponse {
   static created<T>({ res, message, data = null }: ApiResponseT<T>) {
     return this.send(res, 201, message, data);
   }
-
-  static noContent({ res }: Pick<ApiResponseT, "res">) {
-    return res.status(204).send();
-  }
 }
 
 export default ApiResponse;

@@ -1,4 +1,5 @@
-import { z } from "zod";
+import type { Request, Response, NextFunction } from "express";
+import { z, type ZodTypeAny } from "zod";
 
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -12,10 +13,13 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export const refreshSchema = z.object({
-  refresh_token: z.string().min(1, "Refresh token is required"),
-});
-
-export const validate = <T>(schema: z.ZodSchema<T>, data: unknown): T => {
-  return schema.parse(data);
-};
+export const validateRequest =
+  <T extends ZodTypeAny>(schema: T) =>
+  (req: Request, _res: Response, next: NextFunction) => {
+    try {
+      req.body = schema.parse(req.body);
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };

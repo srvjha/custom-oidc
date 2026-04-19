@@ -186,32 +186,6 @@ export async function signIn(data: { email: string; password: string }) {
   };
 }
 
-export async function generateTokensForUser(userId: string, options: { scope?: string; nonce?: string } = {}) {
-  const [user] = await db
-    .select({
-      id: usersTable.id,
-      email: usersTable.email,
-      fullname: usersTable.fullname,
-      emailVerified: usersTable.emailVerified,
-    })
-    .from(usersTable)
-    .where(eq(usersTable.id, userId))
-    .limit(1);
-
-  if (!user) {
-    throw ApiError.notFound("User not found");
-  }
-
-  const accessAndIdTokens = await generateAccessAndIdTokens(user, options.nonce);
-  const refreshTokenData = await generateRefreshToken(user.id);
-
-  return {
-    ...accessAndIdTokens,
-    refreshToken: refreshTokenData.refresh_token,
-    refreshTokenMaxAge: refreshTokenData.maxAge,
-  };
-}
-
 export async function refreshAccessToken(token: string) {
   const publicKey = getPublicKey();
 
