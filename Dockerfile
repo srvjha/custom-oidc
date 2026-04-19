@@ -15,11 +15,17 @@ COPY . .
 # Build the application
 RUN pnpm run build
 
-# Run database migrations
-RUN pnpm run db:migrate
+# Make start script executable
+RUN chmod +x start.sh
 
 # Expose port
 EXPOSE 8000
 
 # Start the application
-CMD ["pnpm", "start"]
+CMD ["./start.sh"]
+
+# Expose port
+EXPOSE 8000
+
+# Start the application with migrations
+CMD ["./start.sh"]
