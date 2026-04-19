@@ -1,5 +1,5 @@
 // Configuration
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://custom-oidc.onrender.com';
 
 // JWT Decode function (simple implementation)
 function jwtDecode(token) {
@@ -156,13 +156,6 @@ function displayDashboard(userInfo, accessToken, idToken) {
   document.getElementById('userId').textContent = userInfo.sub || '-';
   document.getElementById('userEmailVerified').textContent =
     userInfo.email_verified === true ? 'Verified' : 'Not verified';
-
-  // Display tokens (show first 50 chars + ... for security)
-  const shortAccessToken = accessToken.substring(0, 50) + '...';
-  const shortIdToken = idToken.substring(0, 50) + '...';
-
-  document.getElementById('accessTokenInfo').textContent = shortAccessToken;
-  document.getElementById('idTokenInfo').textContent = shortIdToken;
 
   // Show dashboard, hide auth
   authContainer.style.display = 'none';

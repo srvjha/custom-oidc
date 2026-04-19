@@ -13,7 +13,7 @@ async function main() {
     server.listen(PORT, () => {
       console.log(`Http server is running on PORT ${PORT}`);
       console.log(
-        `OIDC Discovery → http://localhost:${PORT}/.well-known/openid-configuration`,
+        `OIDC Discovery → http://localhost:${PORT}/.well-known/openid-configuration (local)`,
       );
     });
   } catch (error) {
