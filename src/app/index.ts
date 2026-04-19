@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import session from "express-session";
 import path from "path";
 import { fileURLToPath } from "url";
 import type { Express, Request, Response, NextFunction } from "express";
@@ -15,6 +16,18 @@ export function createExpressApplication(): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
+
+  // Session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 30 * 60 * 1000 // 30 minutes
+    }
+  }));
 
   // Enable CORS for all routes
   app.use((req, res, next) => {
@@ -44,6 +57,26 @@ export function createExpressApplication(): Express {
   app.get("/.well-known/openid-configuration", openidConfiguration);
 
   app.get("/", (_req, res) => {
+    res.sendFile(path.join(publicPath, "index.html"));
+  });
+
+  app.get("/login", (req, res) => {
+    // Check if user has an active session with auth request
+    if (!(req.session as any).authRequest) {
+      return res.redirect('/');
+    }
+    res.sendFile(path.join(publicPath, "login.html"));
+  });
+
+  app.get("/callback", (req, res) => {
+    // Serve the callback page that will handle the token exchange on the client side
+    res.sendFile(path.join(publicPath, "callback.html"));
+  });
+
+  app.get("/dashboard", (req, res) => {
+    if (!(req.session as any).tokens) {
+      return res.redirect('/');
+    }
     res.sendFile(path.join(publicPath, "index.html"));
   });
 

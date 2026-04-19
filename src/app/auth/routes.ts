@@ -5,7 +5,9 @@ import { authenticate } from "../../middleware/authenticate.js";
 const authRouter: Router = Router();
 
 // ── Public endpoints ──────────────────────────────────────────
+authRouter.get("/authorize", authController.authorize);
 authRouter.post("/register", authController.register);
+authRouter.post("/login", authController.login);
 authRouter.post("/token", authController.token);
 authRouter.get("/certs", authController.certs);
 

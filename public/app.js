@@ -1,5 +1,33 @@
 // Configuration
-const API_BASE_URL = 'https://custom-oidc.onrender.com';
+const API_BASE_URL = '';
+
+// PKCE helper functions
+function generateCodeVerifier() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return base64URLEncode(array);
+}
+
+async function generateCodeChallenge(verifier) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return base64URLEncode(new Uint8Array(digest));
+}
+
+function base64URLEncode(array) {
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+function generateState() {
+  return Math.random().toString(36).substring(2, 15);
+}
+
+// Initialize app on page load
+document.addEventListener('DOMContentLoaded', initializeApp);
 
 // JWT Decode function (simple implementation)
 function jwtDecode(token) {
@@ -56,47 +84,26 @@ tabBtns.forEach((btn) => {
 // Login Form Handler
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
-  const errorDiv = document.getElementById('loginError');
 
-  showSpinner(true);
-  errorDiv.innerHTML = '';
+  // For demo purposes, we'll use the authorization code flow
+  // Generate PKCE challenge
+  const codeVerifier = generateCodeVerifier();
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        grant_type: 'password',
-        email,
-        password,
-      }),
-    });
+  // Store code verifier in session storage for later use
+  sessionStorage.setItem('code_verifier', codeVerifier);
 
-    const data = await response.json();
+  // Redirect to authorization endpoint
+  const authUrl = new URL(`${window.location.origin}/auth/authorize`);
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('client_id', 'demo-client');
+  authUrl.searchParams.set('redirect_uri', window.location.origin + '/callback');
+  authUrl.searchParams.set('scope', 'openid profile email');
+  authUrl.searchParams.set('code_challenge', codeChallenge);
+  authUrl.searchParams.set('code_challenge_method', 'S256');
+  authUrl.searchParams.set('state', generateState());
 
-    if (!response.ok) {
-      throw new Error(data.error_description || 'Login failed');
-    }
-
-    // Store tokens
-    sessionStorage.setItem('access_token', data.access_token);
-    sessionStorage.setItem('id_token', data.id_token);
-
-    // Decode and display user info
-    const decoded = jwtDecode(data.id_token);
-    displayDashboard(decoded, data.access_token, data.id_token);
-
-    // Clear form
-    loginForm.reset();
-  } catch (error) {
-    errorDiv.textContent = error.message || 'Login failed';
-    errorDiv.classList.add('show');
-  } finally {
-    showSpinner(false);
-  }
+  window.location.href = authUrl.toString();
 });
 
 // Register Form Handler

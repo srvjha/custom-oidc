@@ -29,7 +29,7 @@ async function generateAccessAndIdTokens(user: {
   email: string;
   fullname: string;
   emailVerified: boolean;
-}) {
+}, nonce?: string) {
   const privateKey = getPrivateKey();
   const kid = getKid();
 
@@ -47,12 +47,18 @@ async function generateAccessAndIdTokens(user: {
     .setJti(crypto.randomUUID())
     .sign(privateKey);
 
-  const idToken = await new SignJWT({
+  const idTokenPayload: any = {
     sub: user.id,
     email: user.email,
     name: user.fullname,
     email_verified: user.emailVerified,
-  })
+  };
+
+  if (nonce) {
+    idTokenPayload.nonce = nonce;
+  }
+
+  const idToken = await new SignJWT(idTokenPayload)
     .setProtectedHeader({ alg: "RS256", kid, typ: "JWT" })
     .setIssuer(ISSUER)
     .setAudience(ISSUER)
@@ -174,6 +180,32 @@ export async function signIn(data: { email: string; password: string }) {
 
   return {
     user: { id: user.id, email: user.email, fullname: user.fullname },
+    ...accessAndIdTokens,
+    refreshToken: refreshTokenData.refresh_token,
+    refreshTokenMaxAge: refreshTokenData.maxAge,
+  };
+}
+
+export async function generateTokensForUser(userId: string, options: { scope?: string; nonce?: string } = {}) {
+  const [user] = await db
+    .select({
+      id: usersTable.id,
+      email: usersTable.email,
+      fullname: usersTable.fullname,
+      emailVerified: usersTable.emailVerified,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
+
+  if (!user) {
+    throw ApiError.notFound("User not found");
+  }
+
+  const accessAndIdTokens = await generateAccessAndIdTokens(user, options.nonce);
+  const refreshTokenData = await generateRefreshToken(user.id);
+
+  return {
     ...accessAndIdTokens,
     refreshToken: refreshTokenData.refresh_token,
     refreshTokenMaxAge: refreshTokenData.maxAge,
