@@ -2,8 +2,9 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import type { Express } from "express";
-import errorHandler from "../middleware/error.middleware.js";
+import errorHandler from "./middleware/error.middleware.js";
 import healthRoutes from "./health/health.routes.js";
+import openIdRoutes from "./openid/routes.js";
 
 export function createExpressApplication(): Express {
   const app = express();
@@ -15,8 +16,10 @@ export function createExpressApplication(): Express {
 
   app.use("/health", healthRoutes);
 
+  // Openid Service discovery
+  app.use("/", openIdRoutes);
+
   app.use(errorHandler);
 
   return app;
 }
-

@@ -1,12 +1,12 @@
 import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
-import ApiError from "../utils/api-error.js";
+import ApiError from "../../utils/api-error.js";
 
 const errorHandler = (
   err: any,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   let statusCode = err.statusCode || 500;
   let message = err.message || "Something went wrong";
