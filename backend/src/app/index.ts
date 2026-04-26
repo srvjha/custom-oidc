@@ -17,7 +17,7 @@ export function createExpressApplication(): Express {
   app.use("/health", healthRoutes);
 
   // Openid Service discovery
-  app.use("/.well-known/openid-configuration", openIdRoutes);
+  app.use("/", openIdRoutes);
 
   app.use(errorHandler);
 
