@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import type { Express } from "express";
 import errorHandler from "../middleware/error.middleware.js";
+import healthRoutes from "./health/health.routes.js";
 
 export function createExpressApplication(): Express {
   const app = express();
@@ -12,7 +13,10 @@ export function createExpressApplication(): Express {
   app.use(cors({ origin: "*" }));
   app.use(express.static("public"));
 
+  app.use("/health", healthRoutes);
+
   app.use(errorHandler);
 
   return app;
 }
+
