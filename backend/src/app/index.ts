@@ -2,7 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import type { Express } from "express";
-import errorHandler from "../middleware/error.middleware.js";
+import errorHandler from "./middleware/error.middleware.js";
 import healthRoutes from "./health/health.routes.js";
 import openIdRoutes from "./openid/routes.js";
 

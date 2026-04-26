@@ -9,4 +9,5 @@ router.get(
   openIdController.getOpenIdConfig.bind(openIdController),
 );
 router.get("/auth/certs", openIdController.getJwks.bind(openIdController));
+router.get("/o/authorize", openIdController.authorize.bind(openIdController));
 export default router;
