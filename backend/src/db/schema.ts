@@ -26,6 +26,8 @@ export const usersTable = pgTable("users", {
   updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
 });
 
+export type Users = typeof usersTable.$inferSelect;
+
 export const oauthClientsTable = pgTable("oauth_clients", {
   id: uuid("id").primaryKey().defaultRandom(),
   appName: varchar("app_name", { length: 50 }).notNull(),
@@ -46,10 +48,10 @@ export const refreshTokensTable = pgTable("refresh_tokens", {
   userId: uuid("user_id")
     .notNull()
     .references(() => usersTable.id, { onDelete: "cascade" }),
-  clientId: uuid("client_id")
-    .notNull()
-    .references(() => oauthClientsTable.id, { onDelete: "cascade" }),
-  scopes: text("scopes").array().notNull(),
+  clientId: uuid("client_id").references(() => oauthClientsTable.id, {
+    onDelete: "cascade",
+  }),
+  scopes: text("scopes").array().default([]).notNull(),
   revoked: boolean("revoked").default(false).notNull(),
   expiresAt: timestamp("expires_at").notNull(),
 

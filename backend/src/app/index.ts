@@ -5,6 +5,8 @@ import type { Express } from "express";
 import errorHandler from "./middleware/error.middleware.js";
 import healthRoutes from "./health/health.routes.js";
 import openIdRoutes from "./openid/routes.js";
+import authRoutes from "./auth/routes.js";
+import oauthClientRoutes from "./oauth/routes.js";
 
 export function createExpressApplication(): Express {
   const app = express();
@@ -16,7 +18,13 @@ export function createExpressApplication(): Express {
 
   app.use("/health", healthRoutes);
 
-  // Openid Service discovery
+  // First-party auth (sign-up, sign-in, sign-out, me)
+  app.use("/auth", authRoutes);
+
+  // OAuth client management (create, list, get, delete clients)
+  app.use("/oauth/clients", oauthClientRoutes);
+
+  // OIDC / OAuth endpoints (well-known, jwks, authorize, consent, token, userinfo)
   app.use("/", openIdRoutes);
 
   app.use(errorHandler);

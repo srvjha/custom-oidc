@@ -15,6 +15,20 @@
       "when": 1777200652593,
       "tag": "0001_tranquil_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777394012860,
+      "tag": "0002_sloppy_retro_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777470635022,
+      "tag": "0003_tan_triton",
+      "breakpoints": true
     }
   ]
 }
