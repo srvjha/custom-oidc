@@ -17,14 +17,8 @@ export function createExpressApplication(): Express {
   app.use(express.static("public"));
 
   app.use("/health", healthRoutes);
-
-  // First-party auth (sign-up, sign-in, sign-out, me)
   app.use("/auth", authRoutes);
-
-  // OAuth client management (create, list, get, delete clients)
   app.use("/oauth/clients", oauthClientRoutes);
-
-  // OIDC / OAuth endpoints (well-known, jwks, authorize, consent, token, userinfo)
   app.use("/", openIdRoutes);
 
   app.use(errorHandler);
