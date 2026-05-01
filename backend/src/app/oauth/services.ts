@@ -9,7 +9,7 @@ class OAuthClientService {
   async createClient(data: CreateClientModel, ownerUserId: string) {
     const { clientId, clientSecret, hashedSecret } =
       generateClientCredentials();
-      console.log({data,ownerUserId})
+    console.log({ data, ownerUserId });
 
     const [client] = await db
       .insert(oauthClientsTable)
@@ -89,10 +89,6 @@ class OAuthClientService {
     return deleted;
   }
 
-  /**
-   * Validate client credentials (used by token endpoint).
-   * Compares hashed client_secret.
-   */
   async validateClient(clientId: string, clientSecret: string) {
     const [client] = await db
       .select()

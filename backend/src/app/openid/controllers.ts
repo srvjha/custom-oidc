@@ -25,13 +25,6 @@ class OpenIdController {
     return res.json({ keys: [key.toJSON()] });
   }
 
-  /**
-   * GET /o/authorize
-   * Validates client, checks if user is logged in (via cookie), and either:
-   * - Returns login_required (user not logged in)
-   * - Returns consent_required (user hasn't consented)
-   * - Redirects to redirect_uri with auth code (consent exists)
-   */
   public async authorize(req: Request, res: Response) {
     const data = req.query as unknown as AuthorizeRequestModel;
 
@@ -91,14 +84,12 @@ class OpenIdController {
     }
 
     // action === "redirect" — consent already granted
+    if (req.headers.accept?.includes("application/json")) {
+      return res.json({ action: "redirect", redirect_url: result.redirectUrl });
+    }
     return res.redirect(result.redirectUrl);
   }
 
-  /**
-   * POST /o/consent
-   * User submits consent decision (approve/deny).
-   * Must be authenticated.
-   */
   public async consent(req: Request, res: Response) {
     const userId = await this.getUserIdFromRequest(req);
     const data: ConsentRequestModel = req.body;
@@ -106,11 +97,6 @@ class OpenIdController {
     return res.json({ redirect_url: result.redirectUrl });
   }
 
-  /**
-   * POST /o/token
-   * Token exchange endpoint.
-   * Accepts: grant_type=authorization_code or grant_type=refresh_token.
-   */
   public async token(req: Request, res: Response) {
     const data: TokenRequestModel = req.body;
     const result = await openIdService.handleTokenExchange(data);
@@ -121,11 +107,6 @@ class OpenIdController {
     return res.json(result);
   }
 
-  /**
-   * GET /o/userinfo
-   * Returns user claims based on the access token's scopes.
-   * Requires a valid OAuth access token with Bearer scheme.
-   */
   public async userinfo(req: Request, res: Response) {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
