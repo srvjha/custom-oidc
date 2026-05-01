@@ -9,7 +9,7 @@ class OAuthClientService {
   async createClient(data: CreateClientModel, ownerUserId: string) {
     const { clientId, clientSecret, hashedSecret } =
       generateClientCredentials();
-      console.log({data,ownerUserId})
+    console.log({ data, ownerUserId });
 
     const [client] = await db
       .insert(oauthClientsTable)

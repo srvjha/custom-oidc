@@ -56,7 +56,7 @@ class OpenIdService {
   async handleAuthorize(data: AuthorizeRequestModel, userId: string | null) {
     const { client_id, redirect_uri, response_type, scope, state } = data;
 
-    //  Only "code" response_type supported 
+    //  Only "code" response_type supported
     if (response_type !== "code") {
       throw ApiError.badRequest(
         "Unsupported response_type. Only 'code' is supported.",
