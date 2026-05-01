@@ -286,11 +286,21 @@ class OpenIdService {
       .where(eq(authCodesTable.code, code));
 
     if (!authCode) {
+      console.error("[Token Exchange] Invalid authorization code:", code);
       throw ApiError.badRequest("Invalid authorization code");
     }
 
+    console.log("[Token Exchange] Validating code exchange:", {
+      expectedClientId: authCode.clientId,
+      receivedClientId: client.id,
+      expectedRedirectUri: authCode.redirectUri,
+      receivedRedirectUri: redirect_uri,
+      isUsed: authCode.used,
+    });
+
     // Validate: not used, not expired, client matches, redirect_uri matches
     if (authCode.used) {
+      console.error("[Token Exchange] Authorization code already used");
       throw ApiError.badRequest("Authorization code already used");
     }
     // TODO
@@ -298,11 +308,13 @@ class OpenIdService {
     //   throw ApiError.badRequest("Authorization code expired");
     // }
     if (authCode.clientId !== client.id) {
+      console.error("[Token Exchange] Client ID mismatch");
       throw ApiError.badRequest(
         "Authorization code was not issued to this client",
       );
     }
     if (authCode.redirectUri !== redirect_uri) {
+      console.error("[Token Exchange] Redirect URI mismatch. Expected:", authCode.redirectUri, "Received:", redirect_uri);
       throw ApiError.badRequest("redirect_uri mismatch");
     }
 

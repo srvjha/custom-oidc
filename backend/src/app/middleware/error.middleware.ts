@@ -11,6 +11,8 @@ const errorHandler = (
   let statusCode = err.statusCode || 500;
   let message = err.message || "Something went wrong";
 
+  console.error(`[ErrorHandler] ${req.method} ${req.url} - Error:`, err.message);
+
   if (err instanceof ApiError) {
     statusCode = err.statusCode;
     message = err.message;
