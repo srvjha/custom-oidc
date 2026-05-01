@@ -89,10 +89,6 @@ class OAuthClientService {
     return deleted;
   }
 
-  /**
-   * Validate client credentials (used by token endpoint).
-   * Compares hashed client_secret.
-   */
   async validateClient(clientId: string, clientSecret: string) {
     const [client] = await db
       .select()

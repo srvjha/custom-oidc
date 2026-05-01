@@ -53,20 +53,16 @@ class OpenIdService {
     return key;
   }
 
-  /**
-   * Authorization endpoint — validates client, checks consent, returns auth code or consent prompt.
-   */
   async handleAuthorize(data: AuthorizeRequestModel, userId: string | null) {
     const { client_id, redirect_uri, response_type, scope, state } = data;
 
-    // 1. Only "code" response_type supported (Authorization Code Flow)
+    //  Only "code" response_type supported 
     if (response_type !== "code") {
       throw ApiError.badRequest(
         "Unsupported response_type. Only 'code' is supported.",
       );
     }
 
-    // 2. Validate scopes
     const scopes = parseScopes(scope);
     // console.log({scopes})
     // if (!validateScopes(scopes) || !scopes.includes("openid")) {
@@ -75,7 +71,6 @@ class OpenIdService {
     //   );
     // }
 
-    // 3. Validate client exists
     const [client] = await db
       .select()
       .from(oauthClientsTable)
@@ -85,14 +80,12 @@ class OpenIdService {
       throw ApiError.badRequest("Invalid client_id");
     }
 
-    // 4. Validate redirect_uri matches registered URIs
     if (!client.redirectUris.includes(redirect_uri)) {
       throw ApiError.badRequest(
         "redirect_uri does not match any registered redirect URIs",
       );
     }
 
-    // 5. If user is not logged in, return login required
     if (!userId) {
       return {
         action: "login_required" as const,
@@ -107,7 +100,6 @@ class OpenIdService {
       };
     }
 
-    // 6. Check if user has already consented to these scopes for this client
     const [existingConsent] = await db
       .select()
       .from(consentTable)
@@ -135,7 +127,6 @@ class OpenIdService {
       };
     }
 
-    // 7. No consent — prompt the user
     return {
       action: "consent_required" as const,
       client: {
@@ -149,9 +140,6 @@ class OpenIdService {
     };
   }
 
-  /**
-   * Handle user consent decision.
-   */
   async handleConsent(data: ConsentRequestModel, userId: string) {
     const { client_id, redirect_uri, scope, state, approved } = data;
     const scopes = parseScopes(scope);
@@ -215,9 +203,6 @@ class OpenIdService {
     return { redirectUrl: this.buildRedirectUrl(redirect_uri, code, state) };
   }
 
-  /**
-   * Token endpoint — exchanges auth code or refresh token for tokens.
-   */
   async handleTokenExchange(data: TokenRequestModel) {
     const { grant_type, client_id, client_secret } = data;
 
@@ -237,9 +222,6 @@ class OpenIdService {
     throw ApiError.badRequest("Invalid grant_type");
   }
 
-  /**
-   * UserInfo endpoint — returns user claims based on access token scopes.
-   */
   async handleUserInfo(userId: string, scopes: string[]) {
     const [user] = await db
       .select()
