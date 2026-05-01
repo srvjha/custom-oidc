@@ -4,22 +4,20 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import axios from "axios";
 
-const API_URL = "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function AuthorizeContent() {
   const searchParams = useSearchParams();
   
   const [view, setView] = useState<"loading" | "login" | "register" | "consent">("loading");
   
-  // Consent data
   const [consentData, setConsentData] = useState<any>(null);
 
-  // Login form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
-  // Register form
   const [fullname, setFullname] = useState("");
   const [dateofbirth, setDateofbirth] = useState("");
   const [gender, setGender] = useState("other");
@@ -34,14 +32,15 @@ function AuthorizeContent() {
     
     try {
       const urlParams = new URLSearchParams(searchParams as any).toString();
-      const response = await fetch(`${API_URL}/o/authorize?${urlParams}`, {
+      const response = await axios.get(`${API_URL}/o/authorize?${urlParams}`, {
         headers: {
           "Accept": "application/json",
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
-        }
+        },
+        validateStatus: () => true,
       });
       
-      const data = await response.json();
+      const data = response.data;
       
       if (response.status === 401 && data.error === "login_required") {
         setView("login");
@@ -49,7 +48,6 @@ function AuthorizeContent() {
         setConsentData(data);
         setView("consent");
       } else if (response.status === 200 && data.action === "redirect") {
-        // Already consented or auto-approved
         window.location.href = data.redirect_url;
       } else {
         toast.error("Unexpected response from authorization server");
@@ -63,14 +61,13 @@ function AuthorizeContent() {
     e.preventDefault();
     const loadingToast = toast.loading("Logging in...");
     try {
-      const response = await fetch(`${API_URL}/auth/sign-in`, {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/auth/sign-in`, { email, password }, {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        validateStatus: () => true,
       });
       
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (response.status >= 200 && response.status < 300) {
         localStorage.setItem("accessToken", data.data.accessToken);
         toast.success("Logged in successfully!", { id: loadingToast });
         checkAuthorization();
@@ -86,21 +83,20 @@ function AuthorizeContent() {
     e.preventDefault();
     const loadingToast = toast.loading("Creating account...");
     try {
-      const response = await fetch(`${API_URL}/auth/sign-up`, {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/auth/sign-up`, {
+        email,
+        password,
+        fullname,
+        username: email.split("@")[0],
+        dateofbirth: dateofbirth + "T00:00:00Z",
+        gender,
+      }, {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          fullname,
-          username: email.split("@")[0],
-          dateofbirth: dateofbirth + "T00:00:00Z",
-          gender,
-        }),
+        validateStatus: () => true,
       });
 
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (response.status >= 200 && response.status < 300) {
         toast.success("Account created! Please sign in.", { id: loadingToast });
         setView("login");
       } else {
@@ -116,23 +112,22 @@ function AuthorizeContent() {
     if (!token) return;
 
     try {
-      const response = await fetch(`${API_URL}/o/consent`, {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/o/consent`, {
+        client_id: consentData.client_id,
+        redirect_uri: consentData.redirect_uri,
+        scope: searchParams.get("scope") || "",
+        state: consentData.state || "",
+        approved
+      }, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          client_id: consentData.client_id,
-          redirect_uri: consentData.redirect_uri,
-          scope: searchParams.get("scope") || "",
-          state: consentData.state || "",
-          approved
-        }),
+        validateStatus: () => true,
       });
 
-      const data = await response.json();
-      if (response.ok && data.redirect_url) {
+      const data = response.data;
+      if (response.status >= 200 && response.status < 300 && data.redirect_url) {
         window.location.href = data.redirect_url;
       } else {
         toast.error("Failed to process consent");

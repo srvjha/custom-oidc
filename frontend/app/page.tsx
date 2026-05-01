@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Copy, X, Loader2 } from "lucide-react";
+import axios from "axios";
 
-const API_URL = "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface User {
   id: string;
@@ -24,22 +25,18 @@ export default function Home() {
     "login" | "register" | "registerApp" | "credentials" | null
   >(null);
 
-  // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Registration specific
   const [fullname, setFullname] = useState("");
   const [username, setUsername] = useState("");
   const [dateofbirth, setDateofbirth] = useState("");
   const [gender, setGender] = useState("other");
 
-  // App registration specific
   const [appName, setAppName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [redirectUris, setRedirectUris] = useState("");
 
-  // Credentials
   const [credentials, setCredentials] = useState<ClientCredentials | null>(
     null,
   );
@@ -60,12 +57,12 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/auth/me`, {
+      const response = await axios.get(`${API_URL}/auth/me`, {
         headers: getAuthHeaders(),
+        validateStatus: () => true,
       });
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.data);
+      if (response.status >= 200 && response.status < 300) {
+        setUser(response.data.data);
       } else {
         localStorage.removeItem("accessToken");
       }
@@ -86,14 +83,13 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Logging in...");
     try {
-      const response = await fetch(`${API_URL}/auth/sign-in`, {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/auth/sign-in`, { email, password }, {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        validateStatus: () => true,
       });
 
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (response.status >= 200 && response.status < 300) {
         localStorage.setItem("accessToken", data.data.accessToken);
         toast.success("Logged in successfully!", { id: loadingToast });
         setActiveModal(null);
@@ -110,21 +106,20 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Registering...");
     try {
-      const response = await fetch(`${API_URL}/auth/sign-up`, {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/auth/sign-up`, {
+        email,
+        password,
+        fullname,
+        username: username || undefined,
+        dateofbirth,
+        gender,
+      }, {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          fullname,
-          username: username || undefined,
-          dateofbirth,
-          gender,
-        }),
+        validateStatus: () => true,
       });
 
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (response.status >= 200 && response.status < 300) {
         toast.success("Registered successfully! Please log in.", {
           id: loadingToast,
         });
@@ -149,21 +144,20 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Registering app...");
     try {
-      const response = await fetch(`${API_URL}/oauth/clients`, {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/oauth/clients`, {
+        appName,
+        websiteUrl,
+        redirectUris: redirectUris
+          .split(",")
+          .map((uri) => uri.trim())
+          .filter(Boolean),
+      }, {
         headers: getAuthHeaders(),
-        body: JSON.stringify({
-          appName,
-          websiteUrl,
-          redirectUris: redirectUris
-            .split(",")
-            .map((uri) => uri.trim())
-            .filter(Boolean),
-        }),
+        validateStatus: () => true,
       });
 
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (response.status >= 200 && response.status < 300) {
         toast.success("App registered successfully!", { id: loadingToast });
         setCredentials({
           clientId: data.data.clientId,
@@ -212,7 +206,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-indigo-500/30">
-      {/* Header */}
       <header className="fixed top-0 w-full z-10 bg-black/50 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -270,7 +263,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="pt-32 pb-16 px-6 max-w-7xl mx-auto">
         <div className="flex flex-col items-center text-center mt-20 max-w-3xl mx-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-indigo-400 font-medium">
@@ -300,7 +292,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Modals */}
       {activeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-zinc-950 border border-white/10 rounded-2xl w-full max-w-md p-6 relative shadow-2xl animate-in zoom-in-95 duration-200">
