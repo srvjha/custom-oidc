@@ -18,7 +18,7 @@ const errorHandler = (
     message = err.message;
   } else if (err instanceof ZodError) {
     statusCode = 422;
-    message = "Validation Error";
+    message = err.issues[0]?.message || "Validation Error";
     return res.status(statusCode).json({
       success: false,
       message,
