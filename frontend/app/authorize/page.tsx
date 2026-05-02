@@ -53,8 +53,12 @@ function AuthorizeContent() {
       } else {
         toast.error("Unexpected response from authorization server");
       }
-    } catch (error) {
-      toast.error("Failed to communicate with authorization server");
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        setView("login");
+      } else {
+        toast.error("Failed to communicate with authorization server");
+      }
     }
   };
 

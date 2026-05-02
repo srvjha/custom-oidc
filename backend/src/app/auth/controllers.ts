@@ -34,7 +34,7 @@ class AuthController {
     ApiResponse.ok({
       res,
       message: "User signed in successfully",
-      data: { accessToken, refreshToken },
+      data: accessToken,
     });
   }
 
