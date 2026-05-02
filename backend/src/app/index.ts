@@ -7,13 +7,19 @@ import healthRoutes from "./health/health.routes.js";
 import openIdRoutes from "./openid/routes.js";
 import authRoutes from "./auth/routes.js";
 import oauthClientRoutes from "./oauth/routes.js";
+import { env } from "../utils/env-validate.js";
 
 export function createExpressApplication(): Express {
   const app = express();
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
-  app.use(cors({ origin: "*" }));
+  app.use(
+    cors({
+      origin: ["http://localhost:3000", env.DEVELOPER_CONSOLE_URL],
+      credentials: true,
+    }),
+  );
   app.use(express.static("public"));
 
   app.use("/health", healthRoutes);

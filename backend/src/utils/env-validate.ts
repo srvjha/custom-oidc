@@ -8,6 +8,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().nonempty(),
   ISSUER: z.string().nonempty(),
   AUTHORIZE_URL: z.string().url().optional(),
+  DEVELOPER_CONSOLE_URL: z.string().url(),
 });
 
 function createEnv(env: NodeJS.ProcessEnv) {
