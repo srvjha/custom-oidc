@@ -106,6 +106,12 @@ const revokeAllRefreshTokens = async (userId: string) => {
     throw new ApiError(500, error.message);
   }
 };
+const cookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none" as const,
+  path: "/",
+};
 
 export {
   hashPassword,
@@ -117,4 +123,5 @@ export {
   revokeAllRefreshTokens,
   revokeRefreshToken,
   type UserPayload,
+  cookieOptions,
 };

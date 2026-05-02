@@ -3,6 +3,7 @@ import { authService } from "./services.js";
 import type { SignUpRequestModel } from "./models.js";
 import ApiResponse from "../../utils/api-response.js";
 import ApiError from "../../utils/api-error.js";
+import { cookieOptions } from "./utils/index.js";
 
 class AuthController {
   async signUp(req: Request, res: Response) {
@@ -25,12 +26,10 @@ class AuthController {
       throw new ApiError(400, "Failed to sign in");
     }
     const { accessToken, refreshToken } = user;
-   
+
     res.cookie("refreshtoken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     ApiResponse.ok({
       res,
@@ -64,12 +63,11 @@ class AuthController {
       throw ApiError.unauthorized("Refresh token is required");
     }
 
-    const { accessToken, refreshToken } = await authService.refreshTokens(incomingRefreshToken);
+    const { accessToken, refreshToken } =
+      await authService.refreshTokens(incomingRefreshToken);
 
     res.cookie("refreshtoken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
