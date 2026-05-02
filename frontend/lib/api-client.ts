@@ -19,7 +19,7 @@ const apiClient = axios.create({
 let isRefreshing = false;
 
 type FailedRequestCallback = (token: string) => void;
-type FailedRequestReject = (err: any) => void;
+type FailedRequestReject = (err: unknown) => void;
 
 let failedRequestsQueue: {
   resolve: FailedRequestCallback;
@@ -63,7 +63,7 @@ apiClient.interceptors.response.use(
             }
             resolve(apiClient(originalRequest));
           },
-          reject: (err: any) => reject(err),
+          reject: (err: unknown) => reject(err),
         });
       });
     }

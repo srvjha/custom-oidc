@@ -39,8 +39,11 @@ class AuthController {
   }
 
   async signOut(req: Request, res: Response) {
-    res.clearCookie("accesstoken");
-    res.clearCookie("refreshtoken");
+    const refreshToken = req.cookies?.refreshtoken;
+    if (refreshToken) {
+      await authService.handleSignOut(refreshToken);
+    }
+    res.clearCookie("refreshtoken", cookieOptions);
     ApiResponse.ok({
       res,
       message: "User signed out successfully",

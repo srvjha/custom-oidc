@@ -1,11 +1,24 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import apiClient from "../../lib/api-client";
-import { setToken, getToken } from "../../lib/auth-storage";
+import { setToken } from "../../lib/auth-storage";
+
+interface ConsentData {
+  client: {
+    appName: string;
+  };
+  client_id: string;
+  redirect_uri: string;
+  scopes: string[];
+  state?: string;
+  action?: string;
+  error?: string;
+  redirect_url?: string;
+}
 
 function AuthorizeContent() {
   const searchParams = useSearchParams();
@@ -14,7 +27,7 @@ function AuthorizeContent() {
     "loading" | "login" | "register" | "consent"
   >("loading");
 
-  const [consentData, setConsentData] = useState<any>(null);
+  const [consentData, setConsentData] = useState<ConsentData | null>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,22 +36,16 @@ function AuthorizeContent() {
   const [dateofbirth, setDateofbirth] = useState("");
   const [gender, setGender] = useState("other");
 
-  useEffect(() => {
-    checkAuthorization();
-  }, [searchParams]);
-
-  const checkAuthorization = async () => {
-    setView("loading");
-
+  const checkAuthorization = useCallback(async () => {
     try {
-      const urlParams = new URLSearchParams(searchParams as any).toString();
+      const urlParams = searchParams.toString();
       const response = await apiClient.get(`/o/authorize?${urlParams}`, {
         headers: {
           Accept: "application/json",
         },
       });
 
-      const data = response.data;
+      const data = response.data as ConsentData;
 
       if (response.status === 401 && data.error === "login_required") {
         setView("login");
@@ -49,18 +56,32 @@ function AuthorizeContent() {
         setConsentData(data);
         setView("consent");
       } else if (response.status === 200 && data.action === "redirect") {
-        window.location.href = data.redirect_url;
+        window.location.href = data.redirect_url as string;
       } else {
         toast.error("Unexpected response from authorization server");
       }
-    } catch (error: any) {
-      if (error.response?.status === 401) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status: number } };
+      if (axiosError.response?.status === 401) {
         setView("login");
       } else {
         toast.error("Failed to communicate with authorization server");
       }
     }
-  };
+  }, [searchParams]);
+
+  useEffect(() => {
+    let ignore = false;
+    Promise.resolve().then(() => {
+      if (!ignore) {
+        setView("loading");
+        checkAuthorization();
+      }
+    });
+    return () => {
+      ignore = true;
+    };
+  }, [checkAuthorization]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,6 +134,7 @@ function AuthorizeContent() {
   };
 
   const handleConsent = async (approved: boolean) => {
+    if (!consentData) return;
     try {
       const response = await apiClient.post(
         `/o/consent`,
@@ -130,7 +152,7 @@ function AuthorizeContent() {
         },
       );
 
-      const data = response.data;
+      const data = response.data as { redirect_url?: string };
       if (
         response.status >= 200 &&
         response.status < 300 &&
@@ -201,7 +223,7 @@ function AuthorizeContent() {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-400">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <button
               onClick={() => setView("register")}
               className="text-indigo-400 hover:text-indigo-300 transition-colors"
@@ -400,8 +422,8 @@ function AuthorizeContent() {
           </div>
 
           <div className="mt-6 text-center text-xs text-gray-600">
-            By allowing access, you agree to {consentData.client.appName}'s
-            terms of service and privacy policy.
+            By allowing access, you agree to {consentData.client.appName}
+            &apos;s terms of service and privacy policy.
           </div>
         </div>
       </div>

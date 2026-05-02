@@ -70,7 +70,18 @@ class AuthService {
     return { accessToken, refreshToken };
   }
 
-  // logout is directly written controller
+  async handleSignOut(refreshToken: string) {
+    if (refreshToken) {
+      try {
+        const decoded = JWT.verify(refreshToken, PUBLIC_KEY) as { sub: string };
+        const userId = decoded.sub;
+        await revokeAllRefreshTokens(userId);
+      } catch (error) {
+        // If token is invalid/expired, we still want to try revoking it specifically if possible
+        await revokeRefreshToken(refreshToken);
+      }
+    }
+  }
 
   async handleMe(email: string) {
     const [user] = await db
