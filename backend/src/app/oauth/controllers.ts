@@ -10,11 +10,8 @@ import ApiError from "../../utils/api-error.js";
 class OAuthClientController {
   async create(req: Request, res: Response) {
     const data: CreateClientModel = req.body;
-    const { email } = req.user as {email:string}
-    // get user from db
-    const [user] = await db.select({id:usersTable.id}).from(usersTable).where(eq(usersTable.email,email))
-    if(!user) throw ApiError.notFound("User not found")
-    const client = await oauthClientService.createClient(data, user.id);
+    const { id: userId } = req.user as { id: string };
+    const client = await oauthClientService.createClient(data, userId);
     ApiResponse.created({
       res,
       message:
@@ -24,8 +21,8 @@ class OAuthClientController {
   }
 
   async list(req: Request, res: Response) {
-    const { id: ownerUserId } = req.user as { id: string };
-    const clients = await oauthClientService.listClients(ownerUserId);
+    const { id: userId } = req.user as { id: string };
+    const clients = await oauthClientService.listClients(userId);
     ApiResponse.ok({
       res,
       message: "Clients retrieved successfully",

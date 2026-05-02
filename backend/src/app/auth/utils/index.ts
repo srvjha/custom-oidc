@@ -27,12 +27,17 @@ const hashToken = (token: string) => {
   return createHash("sha256").update(token).digest("hex");
 };
 
-const verifyUserToken = (token: string) => {
+const verifyUserToken = (token: string): UserPayload | null => {
   try {
-    return JWT.verify(token, PUBLIC_KEY, {
+    const decoded = JWT.verify(token, PUBLIC_KEY, {
       algorithms: ["RS256"],
       issuer: env.ISSUER,
-    }) as UserPayload;
+    }) as unknown as JWTClaims;
+    
+    return {
+      id: decoded.sub,
+      email: decoded.email,
+    };
   } catch (error) {
     return null;
   }
@@ -78,8 +83,9 @@ const generateAccessAndRefreshToken = async (user: Users) => {
       userId: user.id,
       expiresAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day
     });
-  } catch (error: any) {
-    throw new ApiError(500, error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    throw new ApiError(500, message);
   }
 
   return { accessToken, refreshToken };
@@ -91,8 +97,9 @@ const revokeRefreshToken = async (refreshToken: string) => {
       .update(refreshTokensTable)
       .set({ revoked: true })
       .where(eq(refreshTokensTable.token, refreshToken));
-  } catch (error: any) {
-    throw new ApiError(500, error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    throw new ApiError(500, message);
   }
 };
 
@@ -102,8 +109,9 @@ const revokeAllRefreshTokens = async (userId: string) => {
       .update(refreshTokensTable)
       .set({ revoked: true })
       .where(eq(refreshTokensTable.userId, userId));
-  } catch (error: any) {
-    throw new ApiError(500, error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    throw new ApiError(500, message);
   }
 };
 const cookieOptions = {
