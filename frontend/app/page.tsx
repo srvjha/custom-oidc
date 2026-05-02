@@ -41,16 +41,8 @@ export default function Home() {
   );
 
   const checkAuth = async () => {
-    const token = getToken();
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const response = await apiClient.get(`/auth/me`, {
-        validateStatus: () => true,
-      });
+      const response = await apiClient.get(`/auth/me`);
       if (response.status >= 200 && response.status < 300) {
         setUser(response.data.data);
       } else {
@@ -73,13 +65,10 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Logging in...");
     try {
-      const response = await apiClient.post(
-        `/auth/sign-in`,
-        { email, password },
-        {
-          validateStatus: () => true,
-        },
-      );
+      const response = await apiClient.post(`/auth/sign-in`, {
+        email,
+        password,
+      });
 
       const data = response.data;
       if (response.status >= 200 && response.status < 300) {
@@ -99,20 +88,14 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Registering...");
     try {
-      const response = await apiClient.post(
-        `/auth/sign-up`,
-        {
-          email,
-          password,
-          fullname,
-          username: username || undefined,
-          dateofbirth,
-          gender,
-        },
-        {
-          validateStatus: () => true,
-        },
-      );
+      const response = await apiClient.post(`/auth/sign-up`, {
+        email,
+        password,
+        fullname,
+        username: username || undefined,
+        dateofbirth,
+        gender,
+      });
 
       const data = response.data;
       if (response.status >= 200 && response.status < 300) {
@@ -144,20 +127,14 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Registering app...");
     try {
-      const response = await apiClient.post(
-        `/oauth/clients`,
-        {
-          appName,
-          websiteUrl,
-          redirectUris: redirectUris
-            .split(",")
-            .map((uri) => uri.trim())
-            .filter(Boolean),
-        },
-        {
-          validateStatus: () => true,
-        },
-      );
+      const response = await apiClient.post(`/oauth/clients`, {
+        appName,
+        websiteUrl,
+        redirectUris: redirectUris
+          .split(",")
+          .map((uri) => uri.trim())
+          .filter(Boolean),
+      });
 
       const data = response.data;
       if (response.status >= 200 && response.status < 300) {

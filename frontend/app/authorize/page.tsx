@@ -36,7 +36,6 @@ function AuthorizeContent() {
         headers: {
           Accept: "application/json",
         },
-        validateStatus: () => true,
       });
 
       const data = response.data;
@@ -63,13 +62,10 @@ function AuthorizeContent() {
     e.preventDefault();
     const loadingToast = toast.loading("Logging in...");
     try {
-      const response = await apiClient.post(
-        `/auth/sign-in`,
-        { email, password },
-        {
-          validateStatus: () => true,
-        },
-      );
+      const response = await apiClient.post(`/auth/sign-in`, {
+        email,
+        password,
+      });
 
       const data = response.data;
       if (response.status >= 200 && response.status < 300) {
@@ -88,20 +84,14 @@ function AuthorizeContent() {
     e.preventDefault();
     const loadingToast = toast.loading("Creating account...");
     try {
-      const response = await apiClient.post(
-        `/auth/sign-up`,
-        {
-          email,
-          password,
-          fullname,
-          username: email.split("@")[0],
-          dateofbirth: dateofbirth + "T00:00:00Z",
-          gender,
-        },
-        {
-          validateStatus: () => true,
-        },
-      );
+      const response = await apiClient.post(`/auth/sign-up`, {
+        email,
+        password,
+        fullname,
+        username: email.split("@")[0],
+        dateofbirth: dateofbirth + "T00:00:00Z",
+        gender,
+      });
 
       const data = response.data;
       if (response.status >= 200 && response.status < 300) {
@@ -133,7 +123,6 @@ function AuthorizeContent() {
           headers: {
             "Content-Type": "application/json",
           },
-          validateStatus: () => true,
         },
       );
 
