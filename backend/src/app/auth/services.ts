@@ -12,7 +12,6 @@ class AuthService {
       .select()
       .from(usersTable)
       .where(eq(usersTable.email, email));
-      console.log({emailAlreadyExists})
     if (emailAlreadyExists.length > 0) {
       throw ApiError.badRequest("Email already exists");
     }

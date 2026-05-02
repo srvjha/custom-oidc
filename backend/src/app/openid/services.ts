@@ -211,8 +211,6 @@ class OpenIdService {
       client_id,
       client_secret,
     );
-    console.log({ client });
-
     if (grant_type === "authorization_code") {
       return this.handleAuthCodeExchange(data, client);
     } else if (grant_type === "refresh_token") {
@@ -290,14 +288,6 @@ class OpenIdService {
       throw ApiError.badRequest("Invalid authorization code");
     }
 
-    console.log("[Token Exchange] Validating code exchange:", {
-      expectedClientId: authCode.clientId,
-      receivedClientId: client.id,
-      expectedRedirectUri: authCode.redirectUri,
-      receivedRedirectUri: redirect_uri,
-      isUsed: authCode.used,
-    });
-
     // Validate: not used, not expired, client matches, redirect_uri matches
     if (authCode.used) {
       console.error("[Token Exchange] Authorization code already used");
@@ -314,7 +304,12 @@ class OpenIdService {
       );
     }
     if (authCode.redirectUri !== redirect_uri) {
-      console.error("[Token Exchange] Redirect URI mismatch. Expected:", authCode.redirectUri, "Received:", redirect_uri);
+      console.error(
+        "[Token Exchange] Redirect URI mismatch. Expected:",
+        authCode.redirectUri,
+        "Received:",
+        redirect_uri,
+      );
       throw ApiError.badRequest("redirect_uri mismatch");
     }
 
