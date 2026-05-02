@@ -21,6 +21,7 @@ router.post(
   authController.signIn.bind(authController),
 );
 router.post("/sign-out", authController.signOut.bind(authController));
+router.post("/refresh", authController.refreshToken.bind(authController));
 router.get(
   "/me",
   authMiddleware(),

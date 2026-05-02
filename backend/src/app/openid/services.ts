@@ -14,6 +14,7 @@ import {
 import { oauthClientService } from "../oauth/services.js";
 import { parseScopes, validateScopes } from "./utils/scopes.js";
 import { generateOAuthAccessToken, generateIdToken } from "./utils/tokens.js";
+import { generateRefreshToken } from "../auth/utils/index.js";
 import ApiError from "../../utils/api-error.js";
 import type {
   AuthorizeRequestModel,
@@ -407,7 +408,7 @@ class OpenIdService {
       .set({ revoked: true })
       .where(eq(refreshTokensTable.id, storedToken.id));
 
-    const newRefreshToken = randomBytes(32).toString("hex");
+    const newRefreshToken = generateRefreshToken(user.id);
     await db.insert(refreshTokensTable).values({
       token: newRefreshToken,
       userId: user.id,

@@ -57,6 +57,28 @@ class AuthController {
       data: user,
     });
   }
+
+  async refreshToken(req: Request, res: Response) {
+    const incomingRefreshToken = req.cookies?.refreshtoken;
+    if (!incomingRefreshToken) {
+      throw ApiError.unauthorized("Refresh token is required");
+    }
+
+    const { accessToken, refreshToken } = await authService.refreshTokens(incomingRefreshToken);
+
+    res.cookie("refreshtoken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    ApiResponse.ok({
+      res,
+      message: "Token refreshed successfully",
+      data: { accessToken, refreshToken },
+    });
+  }
 }
 
 export default AuthController;

@@ -1,15 +1,10 @@
 import { randomBytes, createHmac, createHash } from "node:crypto";
 import JWT from "jsonwebtoken";
-import type { StringValue } from "ms";
 import { eq } from "drizzle-orm";
 import ApiError from "../../../utils/api-error.js";
 import { env } from "../../../utils/env-validate.js";
 import { db } from "../../../db/index.js";
-import {
-  refreshTokensTable,
-  usersTable,
-  type Users,
-} from "../../../db/schema.js";
+import { refreshTokensTable, type Users } from "../../../db/schema.js";
 import type { JWTClaims } from "./types.js";
 import { PRIVATE_KEY, PUBLIC_KEY } from "../../openid/utils/certs.js";
 
@@ -119,5 +114,7 @@ export {
   generateRefreshToken,
   generateAccessAndRefreshToken,
   verifyUserToken,
+  revokeAllRefreshTokens,
+  revokeRefreshToken,
   type UserPayload,
 };

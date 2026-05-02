@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Copy, X, Loader2 } from "lucide-react";
-import axios from "axios";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import apiClient from "../lib/api-client";
+import { setToken, getToken } from "../lib/auth-storage";
 
 interface User {
   id: string;
@@ -41,30 +40,21 @@ export default function Home() {
     null,
   );
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("accessToken");
-    return {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
-  };
-
   const checkAuth = async () => {
-    const token = localStorage.getItem("accessToken");
+    const token = getToken();
     if (!token) {
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await axios.get(`${API_URL}/auth/me`, {
-        headers: getAuthHeaders(),
+      const response = await apiClient.get(`/auth/me`, {
         validateStatus: () => true,
       });
       if (response.status >= 200 && response.status < 300) {
         setUser(response.data.data);
       } else {
-        localStorage.removeItem("accessToken");
+        setToken(null);
       }
     } catch (error) {
       console.error("Auth check failed", error);
@@ -83,14 +73,17 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Logging in...");
     try {
-      const response = await axios.post(`${API_URL}/auth/sign-in`, { email, password }, {
-        headers: { "Content-Type": "application/json" },
-        validateStatus: () => true,
-      });
+      const response = await apiClient.post(
+        `/auth/sign-in`,
+        { email, password },
+        {
+          validateStatus: () => true,
+        },
+      );
 
       const data = response.data;
       if (response.status >= 200 && response.status < 300) {
-        localStorage.setItem("accessToken", data.data.accessToken);
+        setToken(data.data.accessToken);
         toast.success("Logged in successfully!", { id: loadingToast });
         setActiveModal(null);
         checkAuth();
@@ -106,17 +99,20 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Registering...");
     try {
-      const response = await axios.post(`${API_URL}/auth/sign-up`, {
-        email,
-        password,
-        fullname,
-        username: username || undefined,
-        dateofbirth,
-        gender,
-      }, {
-        headers: { "Content-Type": "application/json" },
-        validateStatus: () => true,
-      });
+      const response = await apiClient.post(
+        `/auth/sign-up`,
+        {
+          email,
+          password,
+          fullname,
+          username: username || undefined,
+          dateofbirth,
+          gender,
+        },
+        {
+          validateStatus: () => true,
+        },
+      );
 
       const data = response.data;
       if (response.status >= 200 && response.status < 300) {
@@ -128,14 +124,18 @@ export default function Home() {
         toast.error(data.message || "Failed to register", { id: loadingToast });
       }
     } catch (error) {
+      console.log(error);
       toast.error("An error occurred during registration", {
         id: loadingToast,
       });
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+  const handleLogout = async () => {
+    try {
+      await apiClient.post("/auth/sign-out");
+    } catch (e) {}
+    setToken(null);
     setUser(null);
     toast.success("Logged out successfully");
   };
@@ -144,17 +144,20 @@ export default function Home() {
     e.preventDefault();
     const loadingToast = toast.loading("Registering app...");
     try {
-      const response = await axios.post(`${API_URL}/oauth/clients`, {
-        appName,
-        websiteUrl,
-        redirectUris: redirectUris
-          .split(",")
-          .map((uri) => uri.trim())
-          .filter(Boolean),
-      }, {
-        headers: getAuthHeaders(),
-        validateStatus: () => true,
-      });
+      const response = await apiClient.post(
+        `/oauth/clients`,
+        {
+          appName,
+          websiteUrl,
+          redirectUris: redirectUris
+            .split(",")
+            .map((uri) => uri.trim())
+            .filter(Boolean),
+        },
+        {
+          validateStatus: () => true,
+        },
+      );
 
       const data = response.data;
       if (response.status >= 200 && response.status < 300) {
