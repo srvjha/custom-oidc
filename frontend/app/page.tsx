@@ -10,6 +10,10 @@ import { setToken } from "../lib/auth-storage";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/home/Hero";
+import Features from "@/components/home/Features";
+import HowItWorks from "@/components/home/HowItWorks";
+import CodeShowcase from "@/components/home/CodeShowcase";
+import FinalCTA from "@/components/home/FinalCTA";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import AuthModals from "@/components/auth/AuthModals";
 
@@ -225,10 +229,16 @@ export default function Home() {
 
       <main className="flex-grow">
         {!user ? (
-          <Hero
-            onOpenRegister={() => openModal("register")}
-            onOpenLogin={() => openModal("login")}
-          />
+          <>
+            <Hero
+              onOpenRegister={() => openModal("register")}
+              onOpenLogin={() => openModal("login")}
+            />
+            <Features />
+            <HowItWorks />
+            <CodeShowcase />
+            <FinalCTA onOpenRegister={() => openModal("register")} />
+          </>
         ) : (
           <DashboardContent
             user={user}
