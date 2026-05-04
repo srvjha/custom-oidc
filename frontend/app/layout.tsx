@@ -14,8 +14,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "srvAuth Developer Console",
+  title: "Developer Console",
   description: "Secure, modern, and professional developer console for srvAuth identity platform.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
