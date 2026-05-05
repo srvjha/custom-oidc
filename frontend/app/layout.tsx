@@ -13,9 +13,28 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Developer Console",
-  description: "Secure, modern, and professional developer console for srvAuth identity platform.",
+  description:
+    "Secure, modern, and professional developer console for srvAuth identity platform.",
+  openGraph: {
+    title: "srvAuth — Developer Console",
+    description:
+      "Secure, modern, and professional developer console for srvAuth identity platform.",
+    url: "/",
+    siteName: "srvAuth",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "srvAuth — Developer Console",
+    description:
+      "Secure, modern, and professional developer console for srvAuth identity platform.",
+  },
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
